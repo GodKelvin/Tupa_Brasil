@@ -10,9 +10,9 @@ drop table if exists ESPECIE_BIOMA cascade;
 /*Criando a estrutura das tabelas*/
 create table ESPECIE(
 	cod_especie SERIAL primary key not null,
-	nome_especie varchar(25),
-	nome_comum varchar(25),
-	desc_ameaca varchar(50),
+	nome_especie varchar(50),
+	nome_comum varchar(70),
+	desc_ameaca varchar(10),
 	data_registro date not null,
 	fk_cod_grupo_tax integer not null,
 	fk_cod_grupao integer not null,
