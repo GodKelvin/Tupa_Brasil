@@ -96,6 +96,7 @@ cur.execute(sql_inst)
 
 conn.commit()
 
+print("...Get Data 2018 from csv file...")
 with open(path_file_csv) as csv_file:
 	csv_reader = csv.reader(csv_file, delimiter=';')
 	#Ignorar o cabecalho
@@ -120,13 +121,14 @@ with open(path_file_csv) as csv_file:
 			dic_grupao[row[0]] = cod_grupao
 			cod_grupao += 1
 			
-			sql_inst = "select * from grupao where nome_grupao = '" + row[0] + "';"
+			sql_inst = "select * from GRUPAO where nome_grupao = '" + row[0] + "';"
 			#Executa instrucao
 			cur.execute(sql_inst)
 			
 			#Guarda resposta da instrucao executada
 			res = cur.fetchall()
 			
+			#Verificando se a resposta foi vazia
 			if(res == []):
 				sql_inst = "insert into GRUPAO(nome_grupao) values('" + row[0] +"');"
 				cur.execute(sql_inst)
@@ -137,34 +139,46 @@ with open(path_file_csv) as csv_file:
 			dic_grupo_tax[row[1]] = cod_grupo_tax
 			cod_grupo_tax += 1
 			
-			sql_inst = "select * from familia where nome_familia = '" + row[1] + "';"
+			sql_inst = "select * from GRUPO_TAX where nome_grupo_tax = '" + row[1] + "';"
 			cur.execute(sql_inst)
 			res = cur.fetchall()
-			#print(res)
 			if(res == []):
-				sql_inst = "insert into FAMILIA(nome_familia) values('"+row[1]+"');"
+				sql_inst = "insert into GRUPO_TAX(nome_grupo_tax) values('"+row[1]+"');"
 				cur.execute(sql_inst)
 				conn.commit()
 		
-		'''
+		
 		if(row[2] !=  '' and row[2] not in dic_familia):
 			dic_familia[row[2]] = cod_familia
 			cod_familia += 1
 			
+			sql_inst = "select * from FAMILIA where nome_familia = '" + row[2] + "';"
+			cur.execute(sql_inst)
+			res = cur.fetchall()
+			if(res == []):
+				sql_inst = "insert into FAMILIA(nome_familia) values('" + row[2] + "');"
+				cur.execute(sql_inst)
+				conn.commit()
+		
+		
 		if(row[5] !=  '' and row[5] not in dic_cat_ameaca):
 			dic_cat_ameaca[row[5]] = cod_cat_ameaca
 			cod_cat_ameaca += 1
-		'''
+			
+			sql_inst = "select * from CATEGORIA_AMEACA where cat_ameaca = '" + row[5] + "';"
+			cur.execute(sql_inst)
+			res = cur.fetchall()
+			if(res == []):
+				sql_inst = "insert into CATEGORIA_AMEACA(cat_ameaca) values('" + row[5] + "');"
+				cur.execute(sql_inst)
+				conn.commit()
+		
 		
 		
 #input()
 print(dic_grupao)
-'''
-print("==========")
 print(dic_grupo_tax)
-print("==========")
 print(dic_familia)
-print("==========")
 print(dic_cat_ameaca)
-'''
+
 conn.close()
