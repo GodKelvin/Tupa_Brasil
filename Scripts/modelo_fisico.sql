@@ -37,7 +37,7 @@ create table CATEGORIA_AMEACA(
 
 create table FAMILIA(
 	cod_familia SERIAL primary key not null,
-	nome_familiar varchar(25) not null
+	nome_familia varchar(25) not null
 );
 
 create table BIOMA(
