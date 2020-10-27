@@ -71,15 +71,16 @@ cur.execute(sql_inst)
 
 conn.commit()
 
-print("...Delete all data from tables...")
+sql_inst = 'DELETE FROM especie;'
+cur.execute(sql_inst)
+
+
 #Apagando dados do banco de dados (SIM, SEM WHERE, APAGA TUDO :D )
+print("...Delete all data from tables...")
 sql_inst = 'DELETE FROM bioma;'
 cur.execute(sql_inst)
 
 sql_inst = 'DELETE FROM categoria_ameaca;'
-cur.execute(sql_inst)
-
-sql_inst = 'DELETE FROM especie;'
 cur.execute(sql_inst)
 
 sql_inst = 'DELETE FROM especie_bioma;'
@@ -96,7 +97,7 @@ cur.execute(sql_inst)
 
 conn.commit()
 
-print("...Get Data 2018 from csv file...")
+print("...Get and Insert Global Data 2018 from csv file...")
 with open(path_file_csv) as csv_file:
 	csv_reader = csv.reader(csv_file, delimiter=';')
 	#Ignorar o cabecalho
@@ -172,13 +173,39 @@ with open(path_file_csv) as csv_file:
 				sql_inst = "insert into CATEGORIA_AMEACA(cat_ameaca) values('" + row[5] + "');"
 				cur.execute(sql_inst)
 				conn.commit()
+				
+	#Voltando para o inicio do arquivo
+	csv_file.seek(0)
+	csv_reader.__next__()
+	
+	print("...Get and Insert individual data specie 2018 from CSV file...")
+	date_reg = '2018'
+	desc_ameaca = 'null'
+	for row in csv_reader:
+		if(row[0] != ""):
+			fk_cod_grupao = dic_grupao[row[0]]
+			fk_cod_grupo_tax = dic_grupo_tax[row[1]]
+			fk_cod_familia = dic_familia[row[2]]
+			nome_especie = row[3]
+			nome_especie = nome_especie.replace("'", "''")
+			nome_comum = row[4]
+			nome_comum = nome_comum.replace("'", "''")
+			fk_cod_ameaca = dic_cat_ameaca[row[5]]
 		
-		
-		
-#input()
+			sql_inst = "insert into ESPECIE(nome_especie, nome_comum, data_registro, \
+						fk_cod_grupo_tax, fk_cod_grupao, fk_cod_familia, fk_cod_ameaca)\
+						values('%s', '%s', '%s', %i, %i, %i, %i)" \
+						%(nome_especie, nome_comum, date_reg, fk_cod_grupo_tax, fk_cod_grupao, fk_cod_familia, fk_cod_ameaca)
+			#print(sql_inst)
+			cur.execute(sql_inst)
+	
+	conn.commit()	
+'''
 print(dic_grupao)
 print(dic_grupo_tax)
 print(dic_familia)
 print(dic_cat_ameaca)
+'''
 
+#Encerrando conexao com o banco de dados
 conn.close()

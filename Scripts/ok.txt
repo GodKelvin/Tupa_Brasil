@@ -1,0 +1,1 @@
+insert into ESPECIE(nome_especie, nome_comum, data_registro, fk_cod_grupo_tax, fk_cod_grupao, fk_cod_familia, fk_cod_ameaca)values('Abelha da seriedade', 'Abelhinha', '2018', 3, 2, 1, 2);
