@@ -2,7 +2,7 @@
 
 <div align="center">
   <i> Tupã, criador dos céus, terra e mares, assim como do mundo animal e vegetal,lamentavelmente observa sua criação perecer. </i>
-	<br>
+	<br><br>
 	<img src="https://github.com/GodKelvin/Tupa_Brasil/blob/main/Imagens/tupa_henrique_tome.jpg" width=45%>
 	<br>
   <i>Artista: <a href="https://www.artstation.com/henriquetome">Henrique Tomé</a></i>
