@@ -109,4 +109,4 @@ add foreign key(fk_cod_bioma) references BIOMA(cod_bioma);
 ### Script de conversão dos dados
 O tratamento dos arquivos foi feito utilizando a linguagem Python, cujo o objetivo é extrair as informações dos respectivos arquivos e inseri-las num banco de dados relacional (PostgreSQL - Salvo em Nuvem) para que posteriormente fosse feita a análise dos dados. <br>
 
-<a href="https://github.com/GodKelvin/Tupa_Brasil/blob/main/Scripts/data_treat.py"><img src="https://github.com/GodKelvin/Tupa_Brasil/blob/main/Imagens/icon_python.png" align="left" height="7%" width="7%" ></a>
+<a href="https://github.com/GodKelvin/Tupa_Brasil/blob/main/Scripts/data_treat.py"><img src="https://github.com/GodKelvin/Tupa_Brasil/blob/main/Imagens/icon_py.png" width="13%"></a>
