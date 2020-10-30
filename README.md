@@ -29,9 +29,11 @@ Arquivos no formato .CSV.<br>
 [Espécies Ameaçadas 2019](https://github.com/GodKelvin/Tupa_Brasil/blob/main/Arquivos/fauna_flora_ameacada_2019.csv)<br>
 [Espécies Ameaçadas 2020](https://github.com/GodKelvin/Tupa_Brasil/blob/main/Arquivos/fauna_flora_ameacada_2020.csv)<br>
 Dados disponibilizados pelo [Ministério do Meio Ambiente](https://dados.gov.br/dataset/especies-ameacadas).<br>
-**_Por questões acadêmicas, os dados contidos nos arquivos .CSV foram exportados para um banco de dados SQL._**
 
 ## De .CSV para SQL
+Essa conversão de CSV para SQL é apenas por questões acadêmicas, visto que devido a pouca quantidade de dados (Dez mil registros (Cerca de três mil e duzentos por arquivo)), a leitura em memória seria possível normalmente.<br>
+
+Mas antes da conversão, primeiro criamos o banco de dados.
 ### Modelo Conceitual
 ![Alt text](https://github.com/GodKelvin/Tupa_Brasil/blob/main/Imagens/modelo_conceitual.png)
 
@@ -104,5 +106,7 @@ alter table ESPECIE_BIOMA
 add foreign key(fk_cod_especie) references ESPECIE(cod_especie),
 add foreign key(fk_cod_bioma) references BIOMA(cod_bioma);
 ```
-### Tratamento dos arquivos CSV
-O tratamento dos arquivos foi feito utilizando a linguagem Python, cujo o objetivo é extrair as informações dos respectivos arquivos e inseri-las num banco de dados relacional (PostgreSQL - Salvo em Nuvem) para que posteriormente fosse feita a análise dos dados. Essa conversão de CSV para SQL é apenas por questões acadêmicas, visto que devido a pouca quantidade de dados (Dez mil (Cerca de três mil por arquivo)), a leitura em memória seria normalmente possível.<br>
+### Script de conversão dos dados
+O tratamento dos arquivos foi feito utilizando a linguagem Python, cujo o objetivo é extrair as informações dos respectivos arquivos e inseri-las num banco de dados relacional (PostgreSQL - Salvo em Nuvem) para que posteriormente fosse feita a análise dos dados. <br>
+
+<a href="https://www.google.com/"><img src="https://github.com/GodKelvin/Tupa_Brasil/blob/main/Imagens/icon_python.png" align="left" height="7%" width="7%" ></a>
