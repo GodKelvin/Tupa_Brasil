@@ -10,17 +10,22 @@ dic_familia = {}
 dic_cat_ameaca = {}
 conn = ""
 
-def sql_check(sql_query):
+def sql_check(table, column, parameter):
 	cur = conn.cursor()
-	
-	#Executa instrucao SQL
-	cur.execute(sql_query)
-	
-	#Guarda resposta da instrucao executada
+	#Dois '%%' pra inserir %s e em seguida, executar com parametro
+	sql_inst = "select * from %s where %s = %%s;" %(table, column)
+	cur.execute(sql_inst, [parameter])
 	res = cur.fetchall()
+	
+	if(res == []):
+		#insert into TABELA(coluna) values(parametros)
+		#Dois '%%' pra inserir %s e em seguida, executar com parametro
+		sql_inst = "insert into %s(%s) values(%%s);" %(table, column)
+		#print(sql_inst)
+		cur.execute(sql_inst, [parameter])
+		conn.commit()
+		
 	cur.close()
-	return res
-
 
 def extract_credentials(path_file_credentials):
 	#Config BD postgreSQL
@@ -104,9 +109,9 @@ def reset_database():
 	cur.execute(sql_inst)
 
 	conn.commit()
+	cur.close()
 
-
-def extract_data_old_files(path_file_csv, date_reg):
+def extract_data_old_files(path_file_csv, date_reg, _encoding):
 	#Permitindo acesso as variaveis globais
 	global dic_grupo_tax
 	global dic_grupao
@@ -115,9 +120,8 @@ def extract_data_old_files(path_file_csv, date_reg):
 	
 	#Criando um cursor
 	cur = conn.cursor()
-	print("...Get and Insert Global Data from csv file...")
-	print("--- %s --- " %path_file_csv)
-	with open(path_file_csv) as csv_file:
+	print("...Get and Insert Global Data from csv file - %s..." %date_reg)
+	with open(path_file_csv, encoding=_encoding) as csv_file:
 		csv_reader = csv.reader(csv_file, delimiter=';')
 		#Ignorar o cabecalho
 		csv_reader.__next__()
@@ -128,81 +132,38 @@ def extract_data_old_files(path_file_csv, date_reg):
 		cod_familia = 1
 		cod_cat_ameaca = 1
 		
-		
 		for row in csv_reader:
-			#print(row[0] + ',' + row[1] + ',' + row[2] + ',' + row[3] + ',' + row[4] + ',' +row[5])
-			#input()
-			#print(row[5])
-			
 			#Verificar se as chaves estrangeiras existem
 			#Adicionar as chaves estrangeiras em suas respectivas tabelas
 			#Adicionar infos da especie e suas chaves
 			if(row[0] !=  '' and row[0] not in dic_grupao):
 				dic_grupao[row[0]] = cod_grupao
 				cod_grupao += 1
-				
-				sql_inst = "select * from GRUPAO where nome_grupao = '%s';" %row[0]
-				#Executa instrucao
-				#cur.execute(sql_inst)
-				res = sql_check(sql_inst)
-			
-				#Guarda resposta da instrucao executada
-				#res = cur.fetchall()
-				#print(res)
-				#Verificando se a resposta foi vazia
-				if(res == []):
-					sql_inst = "insert into GRUPAO(nome_grupao) values('%s');" %row[0]
-					cur.execute(sql_inst)
-					conn.commit()
-					
+				#Tabela, coluna, parametro
+				sql_check("GRUPAO", "nome_grupao", row[0])
 			
 			if(row[1] !=  '' and row[1] not in dic_grupo_tax):
 				dic_grupo_tax[row[1]] = cod_grupo_tax
 				cod_grupo_tax += 1
+				sql_check("GRUPO_TAX", "nome_grupo_tax", row[1])
 				
-				sql_inst = "select * from GRUPO_TAX where nome_grupo_tax = '%s';" % row[1]
-				res = sql_check(sql_inst)
-				#cur.execute(sql_inst)
-				#res = cur.fetchall()
-				if(res == []):
-					sql_inst = "insert into GRUPO_TAX(nome_grupo_tax) values('%s');" %row[1]
-					cur.execute(sql_inst)
-					conn.commit()
-			
-			
 			if(row[2] !=  '' and row[2] not in dic_familia):
 				dic_familia[row[2]] = cod_familia
 				cod_familia += 1
-				
-				sql_inst = "select * from FAMILIA where nome_familia = '%s';" %row[2]
-				#cur.execute(sql_inst)
-				#res = cur.fetchall()
-				res = sql_check(sql_inst)
-				if(res == []):
-					sql_inst = "insert into FAMILIA(nome_familia) values('%s');" %row[2]
-					cur.execute(sql_inst)
-					conn.commit()
+				sql_check("FAMILIA", "nome_familia", row[2])
 			
 			
 			if(row[5] !=  '' and row[5] not in dic_cat_ameaca):
 				dic_cat_ameaca[row[5]] = cod_cat_ameaca
 				cod_cat_ameaca += 1
-				
-				sql_inst = "select * from CATEGORIA_AMEACA where cat_ameaca = '%s';" %row[5]
-				#cur.execute(sql_inst)
-				#res = cur.fetchall()
-				res = sql_check(sql_inst)
-				if(res == []):
-					sql_inst = "insert into CATEGORIA_AMEACA(cat_ameaca) values('%s');" %row[5]
-					cur.execute(sql_inst)
-					conn.commit()
+				#sql_check("CATEGORIA_AMEACA", "cat_ameaca", row[5])
+				sql_check("CATEGORIA_AMEACA", "cat_ameaca", row[5])
 					
 		#Voltando para o inicio do arquivo
 		csv_file.seek(0)
 		csv_reader.__next__()
+		print("...Get and Insert individual data specie %s from CSV file..." %date_reg)
 		
-		print("...Get and Insert individual data specie 2018 from CSV file...")
-		desc_ameaca = 'null'
 		for row in csv_reader:
 			if(row[0] != ""):
 				fk_cod_grupao = dic_grupao[row[0]]
@@ -213,15 +174,18 @@ def extract_data_old_files(path_file_csv, date_reg):
 				nome_comum = row[4]
 				nome_comum = nome_comum.replace("'", "''")
 				fk_cod_ameaca = dic_cat_ameaca[row[5]]
-			
+				#Se nao ter nome comum, insere null
+				if(nome_comum == "Vazio" or nome_comum == "vazio"):
+					nome_comum = None
+				
 				sql_inst = "insert into ESPECIE(nome_especie, nome_comum, data_registro, \
 							fk_cod_grupo_tax, fk_cod_grupao, fk_cod_familia, fk_cod_ameaca)\
-							values('%s', '%s', '%s', %i, %i, %i, %i)" \
-							%(nome_especie, nome_comum, date_reg, fk_cod_grupo_tax, fk_cod_grupao, fk_cod_familia, fk_cod_ameaca)
-				#print(sql_inst)
-				cur.execute(sql_inst)
+							values(%s, %s, %s, %s, %s, %s, %s);"
+							
+				cur.execute(sql_inst, (nome_especie, nome_comum, date_reg, fk_cod_grupo_tax, fk_cod_grupao, fk_cod_familia, fk_cod_ameaca))
 		
-		conn.commit()	
+		conn.commit()
+	print("---Species %s Inserted---" %date_reg)
 
 def main():
 	path_file_csv_2018 = "/home/godkelvin/Tupa_Brasil/Arquivos/fauna_flora_ameacada_2018.csv"
@@ -230,14 +194,16 @@ def main():
 	reset_database()
 	
 	#Caminho do arquivo e data dos dados
-	extract_data_old_files(path_file_csv_2018, '2018')
-	'''
-	print(dic_grupao)
-	print(dic_grupo_tax)
-	print(dic_familia)
-	print(dic_cat_ameaca)
-	'''
+	extract_data_old_files(path_file_csv_2018, '2018', 'utf-8')
+
+	extract_data_old_files(path_file_csv_2019, '2019', 'iso-8859-1')
 	
+	'''
+	print(len(dic_grupao))
+	print(len(dic_grupo_tax))
+	print(len(dic_familia))
+	print(len(dic_cat_ameaca))
+	'''
 	#Encerrando conexao com o banco de dados
 	conn.close()
 	
