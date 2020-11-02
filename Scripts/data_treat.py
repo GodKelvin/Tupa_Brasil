@@ -10,11 +10,15 @@ dic_familia = {}
 dic_cat_ameaca = {}
 conn = ""
 
-def consult(sql_query):
+def sql_check(sql_query):
+	cur = conn.cursor()
+	
+	#Executa instrucao SQL
 	cur.execute(sql_query)
-	res = cur.fetchall
-	print(res)
-	#conn.close()
+	
+	#Guarda resposta da instrucao executada
+	res = cur.fetchall()
+	cur.close()
 	return res
 
 
@@ -102,9 +106,7 @@ def reset_database():
 	conn.commit()
 
 
-
-
-def extract_data_old_files(path_file_csv):
+def extract_data_old_files(path_file_csv, date_reg):
 	#Permitindo acesso as variaveis globais
 	global dic_grupo_tax
 	global dic_grupao
@@ -139,16 +141,17 @@ def extract_data_old_files(path_file_csv):
 				dic_grupao[row[0]] = cod_grupao
 				cod_grupao += 1
 				
-				sql_inst = "select * from GRUPAO where nome_grupao = '" + row[0] + "';"
+				sql_inst = "select * from GRUPAO where nome_grupao = '%s';" %row[0]
 				#Executa instrucao
-				cur.execute(sql_inst)
-				
+				#cur.execute(sql_inst)
+				res = sql_check(sql_inst)
+			
 				#Guarda resposta da instrucao executada
-				res = cur.fetchall()
-				
+				#res = cur.fetchall()
+				#print(res)
 				#Verificando se a resposta foi vazia
 				if(res == []):
-					sql_inst = "insert into GRUPAO(nome_grupao) values('" + row[0] +"');"
+					sql_inst = "insert into GRUPAO(nome_grupao) values('%s');" %row[0]
 					cur.execute(sql_inst)
 					conn.commit()
 					
@@ -157,11 +160,12 @@ def extract_data_old_files(path_file_csv):
 				dic_grupo_tax[row[1]] = cod_grupo_tax
 				cod_grupo_tax += 1
 				
-				sql_inst = "select * from GRUPO_TAX where nome_grupo_tax = '" + row[1] + "';"
-				cur.execute(sql_inst)
-				res = cur.fetchall()
+				sql_inst = "select * from GRUPO_TAX where nome_grupo_tax = '%s';" % row[1]
+				res = sql_check(sql_inst)
+				#cur.execute(sql_inst)
+				#res = cur.fetchall()
 				if(res == []):
-					sql_inst = "insert into GRUPO_TAX(nome_grupo_tax) values('"+row[1]+"');"
+					sql_inst = "insert into GRUPO_TAX(nome_grupo_tax) values('%s');" %row[1]
 					cur.execute(sql_inst)
 					conn.commit()
 			
@@ -170,11 +174,12 @@ def extract_data_old_files(path_file_csv):
 				dic_familia[row[2]] = cod_familia
 				cod_familia += 1
 				
-				sql_inst = "select * from FAMILIA where nome_familia = '" + row[2] + "';"
-				cur.execute(sql_inst)
-				res = cur.fetchall()
+				sql_inst = "select * from FAMILIA where nome_familia = '%s';" %row[2]
+				#cur.execute(sql_inst)
+				#res = cur.fetchall()
+				res = sql_check(sql_inst)
 				if(res == []):
-					sql_inst = "insert into FAMILIA(nome_familia) values('" + row[2] + "');"
+					sql_inst = "insert into FAMILIA(nome_familia) values('%s');" %row[2]
 					cur.execute(sql_inst)
 					conn.commit()
 			
@@ -183,11 +188,12 @@ def extract_data_old_files(path_file_csv):
 				dic_cat_ameaca[row[5]] = cod_cat_ameaca
 				cod_cat_ameaca += 1
 				
-				sql_inst = "select * from CATEGORIA_AMEACA where cat_ameaca = '" + row[5] + "';"
-				cur.execute(sql_inst)
-				res = cur.fetchall()
+				sql_inst = "select * from CATEGORIA_AMEACA where cat_ameaca = '%s';" %row[5]
+				#cur.execute(sql_inst)
+				#res = cur.fetchall()
+				res = sql_check(sql_inst)
 				if(res == []):
-					sql_inst = "insert into CATEGORIA_AMEACA(cat_ameaca) values('" + row[5] + "');"
+					sql_inst = "insert into CATEGORIA_AMEACA(cat_ameaca) values('%s');" %row[5]
 					cur.execute(sql_inst)
 					conn.commit()
 					
@@ -196,7 +202,6 @@ def extract_data_old_files(path_file_csv):
 		csv_reader.__next__()
 		
 		print("...Get and Insert individual data specie 2018 from CSV file...")
-		date_reg = '2018'
 		desc_ameaca = 'null'
 		for row in csv_reader:
 			if(row[0] != ""):
@@ -223,7 +228,9 @@ def main():
 	path_file_csv_2019 = "/home/godkelvin/Tupa_Brasil/Arquivos/fauna_flora_ameacada_2019.csv"
 	extract_credentials(path_file_credentials)	
 	reset_database()
-	extract_data_old_files(path_file_csv_2018)
+	
+	#Caminho do arquivo e data dos dados
+	extract_data_old_files(path_file_csv_2018, '2018')
 	'''
 	print(dic_grupao)
 	print(dic_grupo_tax)
