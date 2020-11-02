@@ -112,12 +112,14 @@ def reset_database():
 	cur.close()
 
 def extract_data_old_files(path_file_csv, date_reg, _encoding):
+	'''
 	#Permitindo acesso as variaveis globais
+	
 	global dic_grupo_tax
 	global dic_grupao
 	global dic_familia
 	global dic_cat_ameaca
-	
+	'''
 	#Criando um cursor
 	cur = conn.cursor()
 	print("...Get and Insert Global Data from csv file - %s..." %date_reg)
@@ -125,45 +127,7 @@ def extract_data_old_files(path_file_csv, date_reg, _encoding):
 		csv_reader = csv.reader(csv_file, delimiter=';')
 		#Ignorar o cabecalho
 		csv_reader.__next__()
-		
-		#Grupao[0], grupo_tax[1], familia[2], nome_especie[3], nome_comum[4], cat_ameaca[5]
-		cod_grupao = 1
-		cod_grupo_tax = 1
-		cod_familia = 1
-		cod_cat_ameaca = 1
-		
-		for row in csv_reader:
-			#Verificar se as chaves estrangeiras existem
-			#Adicionar as chaves estrangeiras em suas respectivas tabelas
-			#Adicionar infos da especie e suas chaves
-			if(row[0] !=  '' and row[0] not in dic_grupao):
-				dic_grupao[row[0]] = cod_grupao
-				cod_grupao += 1
-				#Tabela, coluna, parametro
-				sql_check("GRUPAO", "nome_grupao", row[0])
-			
-			if(row[1] !=  '' and row[1] not in dic_grupo_tax):
-				dic_grupo_tax[row[1]] = cod_grupo_tax
-				cod_grupo_tax += 1
-				sql_check("GRUPO_TAX", "nome_grupo_tax", row[1])
-				
-			if(row[2] !=  '' and row[2] not in dic_familia):
-				dic_familia[row[2]] = cod_familia
-				cod_familia += 1
-				sql_check("FAMILIA", "nome_familia", row[2])
-			
-			
-			if(row[5] !=  '' and row[5] not in dic_cat_ameaca):
-				dic_cat_ameaca[row[5]] = cod_cat_ameaca
-				cod_cat_ameaca += 1
-				#sql_check("CATEGORIA_AMEACA", "cat_ameaca", row[5])
-				sql_check("CATEGORIA_AMEACA", "cat_ameaca", row[5])
-					
-		#Voltando para o inicio do arquivo
-		csv_file.seek(0)
-		csv_reader.__next__()
 		print("...Get and Insert individual data specie %s from CSV file..." %date_reg)
-		
 		for row in csv_reader:
 			if(row[0] != ""):
 				fk_cod_grupao = dic_grupao[row[0]]
@@ -187,15 +151,91 @@ def extract_data_old_files(path_file_csv, date_reg, _encoding):
 		conn.commit()
 	print("---Species %s Inserted---" %date_reg)
 
+
+def create_dic_from_sql(table_name):
+	dic_table = {}
+	cur = conn.cursor()
+	sql_inst = "select * from %s;" %table_name
+	cur.execute(sql_inst)
+	res = cur.fetchall()
+	
+	for tuple in res:
+		value_cod = tuple[0]
+		key_dic = tuple[1]
+		dic_table[key_dic] = value_cod
+	
+	cur.close()
+	return dic_table
+	
+def check_global_data_files_SQL(path_file_csv, _encoding):
+	#Permitindo acesso as variaveis globais
+	global dic_grupo_tax
+	global dic_grupao
+	global dic_familia
+	global dic_cat_ameaca
+	
+	dic_grupo_tax = create_dic_from_sql("grupo_tax")
+	dic_grupao = create_dic_from_sql("grupao")
+	dic_familia = create_dic_from_sql("familia")
+	dic_cat_ameaca = create_dic_from_sql("categoria_ameaca")
+	
+	
+	
+	#print("...Get and Insert Global Data from csv file - %s..." %date_reg)
+	print("... Check global data...")
+	with open(path_file_csv, encoding=_encoding) as csv_file:
+		csv_reader = csv.reader(csv_file, delimiter=';')
+		#Ignorar o cabecalho
+		csv_reader.__next__()
+		
+		#Grupao[0], grupo_tax[1], familia[2], nome_especie[3], nome_comum[4], cat_ameaca[5]
+		cod_grupao = 1
+		cod_grupo_tax = 1
+		cod_familia = 1
+		cod_cat_ameaca = 1
+		
+		for row in csv_reader:
+			#Verificar se as chaves estrangeiras existem
+			#Adicionar as chaves estrangeiras em suas respectivas tabelas
+			#Adicionar infos da especie e suas chaves
+			if(row[0] !=  '' and row[0] not in dic_grupao):
+				#dic_grupao[row[0]] = cod_grupao
+				#cod_grupao += 1
+				#Tabela, coluna, parametro
+				sql_check("GRUPAO", "nome_grupao", row[0])
+				dic_grupao = create_dic_from_sql("grupao")
+			
+			if(row[1] !=  '' and row[1] not in dic_grupo_tax):
+				#dic_grupo_tax[row[1]] = cod_grupo_tax
+				#cod_grupo_tax += 1
+				sql_check("GRUPO_TAX", "nome_grupo_tax", row[1])
+				dic_grupo_tax = create_dic_from_sql("grupo_tax")
+				
+			if(row[2] !=  '' and row[2] not in dic_familia):
+				#dic_familia[row[2]] = cod_familia
+				#cod_familia += 1
+				sql_check("FAMILIA", "nome_familia", row[2])
+				dic_familia = create_dic_from_sql("familia")
+			
+			if(row[5] !=  '' and row[5] not in dic_cat_ameaca):
+				#dic_cat_ameaca[row[5]] = cod_cat_ameaca
+				#cod_cat_ameaca += 1
+				#sql_check("CATEGORIA_AMEACA", "cat_ameaca", row[5])
+				sql_check("CATEGORIA_AMEACA", "cat_ameaca", row[5])
+				dic_cat_ameaca = create_dic_from_sql("categoria_ameaca")
+
 def main():
 	path_file_csv_2018 = "/home/godkelvin/Tupa_Brasil/Arquivos/fauna_flora_ameacada_2018.csv"
 	path_file_csv_2019 = "/home/godkelvin/Tupa_Brasil/Arquivos/fauna_flora_ameacada_2019.csv"
 	extract_credentials(path_file_credentials)	
-	reset_database()
+	#reset_database()
+	
+	#Verificando se as tabelas tem os respectivos dados globais para serem associados as especies
+	check_global_data_files_SQL(path_file_csv_2018, 'utf-8')
+	check_global_data_files_SQL(path_file_csv_2019, 'iso-8859-1')
 	
 	#Caminho do arquivo e data dos dados
 	extract_data_old_files(path_file_csv_2018, '2018', 'utf-8')
-
 	extract_data_old_files(path_file_csv_2019, '2019', 'iso-8859-1')
 	
 	'''
