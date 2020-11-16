@@ -1,2 +1,3 @@
 *.~lock*
 .credentials
+.credentials_teste
